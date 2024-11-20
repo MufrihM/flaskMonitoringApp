@@ -1,0 +1,23 @@
+# Lingkungan virtual Python
+.venv/
+.env/
+*.pyc
+__pycache__/
+
+# Konfigurasi sementara
+*.log
+*.sqlite3
+instance/
+*.env
+*.secret
+
+# File spesifik IDE atau OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# File build
+build/
+dist/
+*.egg-info/
