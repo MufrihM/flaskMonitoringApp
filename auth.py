@@ -1,12 +1,13 @@
 from flask import request, jsonify
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token
-from app import mongo
+from flask_restful import Resource
 
 bcrypt = Bcrypt()
 
 class RegisterAPI(Resource):
     def post(self):
+        from app import mongo
         data = request.json
         username = data.get("username")
         email = data.get("email")
@@ -31,6 +32,7 @@ class RegisterAPI(Resource):
 
 class LoginAPI(Resource):
     def post(self):
+        from app import mongo
         data = request.json
         username = data.get("username")
         password = data.get("password")

@@ -2,8 +2,11 @@ from flask import request, jsonify
 from flask_restful import Resource
 from models import product_serializer, user_serializer, serialize_list, order_serializer, order_details_serializer, temperature_serializer, humidity_serializer
 from flask_pymongo import ObjectId
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from auth import RegisterAPI, LoginAPI
 
 class ProductListAPI(Resource):
+    @jwt_required
     def get(self):
         # mengambil semua produk
         from app import mongo
@@ -21,6 +24,7 @@ class ProductListAPI(Resource):
         return jsonify(product_serializer(mongo.db.products.find_one({"_id": product_id})))
     
 class ProductAPI(Resource):
+    @jwt_required()
     def get(self, product_id):
         # mengambil detail produk berdasarkan id
         from app import mongo
@@ -51,6 +55,7 @@ class ProductAPI(Resource):
         return jsonify({"message": "Product not found"}), 404
     
 class UserListAPI(Resource):
+    @jwt_required()
     def get(self):
         # mengambil data user
         from app import mongo
@@ -58,10 +63,11 @@ class UserListAPI(Resource):
         return jsonify(serialize_list(users, user_serializer))
     
 class OrderAPI(Resource):
+    @jwt_required()
     def post(self):
         from app import mongo
         data = request.json
-        user_id = data.get("user_id")
+        user_id = get_jwt_identity() # get user ID using JWT Token
         product_ids = data.get("product_ids")
 
         # vallidasi user
@@ -109,6 +115,7 @@ class OrderAPI(Resource):
         return jsonify(order_details_serializer(order, user, products))
 
 class TemperatureAPI(Resource):
+    @jwt_required()
     def get(self):
         from app import mongo
         temperatures = mongo.db.temp.find()
@@ -123,6 +130,7 @@ class TemperatureAPI(Resource):
         return jsonify(temperature_serializer(mongo.db.temp.find_one({"_id": temp_id})))
     
 class HumidityAPI(Resource):
+    @jwt_required()
     def get(self):
         from app import mongo
         humidity = mongo.db.humid.find()
@@ -145,3 +153,7 @@ def initialize_routes(api):
     api.add_resource(UserListAPI, '/users')
     api.add_resource(TemperatureAPI, '/temp')
     api.add_resource(HumidityAPI, '/humid')
+
+    #  Endpoint untuk autentikasi
+    api.add_resource('/auth/register')
+    api.add_resource('/auth/login')
