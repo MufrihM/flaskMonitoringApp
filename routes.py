@@ -155,5 +155,5 @@ def initialize_routes(api):
     api.add_resource(HumidityAPI, '/humid')
 
     #  Endpoint untuk autentikasi
-    api.add_resource('/auth/register')
-    api.add_resource('/auth/login')
+    api.add_resource(RegisterAPI, '/register')
+    api.add_resource(LoginAPI, '/login')
