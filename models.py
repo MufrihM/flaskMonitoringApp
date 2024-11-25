@@ -13,7 +13,8 @@ def user_serializer(user) -> dict:
         "id": str(user["_id"]),
         "username": user["username"],
         "email": user["email"],
-        "name": user["name"]
+        "name": user["name"],
+        "password": user["pass"]
     }
 
 def order_serializer(order) -> dict:
