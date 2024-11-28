@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from auth import RegisterAPI, LoginAPI
 
 class ProductListAPI(Resource):
+    @jwt_required()
     def get(self):
         # mengambil semua produk
         from app import mongo
@@ -23,6 +24,7 @@ class ProductListAPI(Resource):
         return jsonify(product_serializer(mongo.db.products.find_one({"_id": product_id})))
     
 class ProductAPI(Resource):
+    @jwt_required()
     def get(self, product_id):
         # mengambil detail produk berdasarkan id
         from app import mongo
@@ -34,7 +36,7 @@ class ProductAPI(Resource):
     def put(self, product_id):
         # memperbarui produk berdasarkan id
         from app import mongo
-        data = request.get_json()
+        data = request.json
         updated_product = mongo.db.products.find_one_and_update(
             {"_id": ObjectId(product_id)},
             {"$set": {"name": data.get("name"), "price": data.get("price")}},
@@ -53,6 +55,7 @@ class ProductAPI(Resource):
         return jsonify({"message": "Product not found"}), 404
     
 class UserListAPI(Resource):
+    @jwt_required()
     def get(self):
         # mengambil data user
         from app import mongo
@@ -60,6 +63,7 @@ class UserListAPI(Resource):
         return jsonify(serialize_list(users, user_serializer))
     
 class OrderAPI(Resource):
+    @jwt_required()
     def post(self):
         from app import mongo
         data = request.json
@@ -111,6 +115,7 @@ class OrderAPI(Resource):
         return jsonify(order_details_serializer(order, user, products))
 
 class TemperatureAPI(Resource):
+    @jwt_required()
     def get(self):
         from app import mongo
         temperatures = mongo.db.temp.find()
@@ -125,6 +130,7 @@ class TemperatureAPI(Resource):
         return jsonify(temperature_serializer(mongo.db.temp.find_one({"_id": temp_id})))
     
 class HumidityAPI(Resource):
+    @jwt_required()
     def get(self):
         from app import mongo
         humidity = mongo.db.humid.find()
@@ -137,7 +143,6 @@ class HumidityAPI(Resource):
             "timeStamp": data.get("timeStamp")
         }).inserted_id
         return jsonify(humidity_serializer(mongo.db.humid.find_one({"_id": humid_id})))
-
 
     
 def initialize_routes(api):

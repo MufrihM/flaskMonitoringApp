@@ -16,6 +16,7 @@ api = Api(app)
 mongo = PyMongo(app)
 
 # initialize jwt
+app.config['JWT_SECRET_KEY'] = Config.SECRET_KEY
 jwt = JWTManager(app)
 
 from routes import initialize_routes

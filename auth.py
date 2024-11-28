@@ -13,9 +13,13 @@ class RegisterAPI(Resource):
         email = data.get("email")
         password = data.get("password")
 
+        # Check input
+        if not username or not email or not password:
+            return jsonify({"message": "Mohon isi semua data"}), 400
+
         # Validasi jika username/email sudah terdaftar
         if mongo.db.users.find_one({"username": username}):
-            return jsonify({"message": "Username already exists"}), 400
+            return jsonify({"message": "Username sudah digunakan, mohon gunakan username lain!"}), 400
 
         # Hash password sebelum disimpan
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -25,10 +29,9 @@ class RegisterAPI(Resource):
             "username": username,
             "email": email,
             "password": hashed_password,
-            "name": data.get("name", "")
         }).inserted_id
 
-        return jsonify({"message": "User registered successfully", "id": str(user_id)})
+        return jsonify({"message": "Register berhasil", "id": str(user_id)})
 
 class LoginAPI(Resource):
     def post(self):
@@ -37,16 +40,20 @@ class LoginAPI(Resource):
         username = data.get("username")
         password = data.get("password")
 
+        # check input
+        if not (username and password):
+            return {"message": "Mohon isi semua data!"}, 400
+
         # get user data
         user = mongo.db.users.find_one({"username": username})
         # user valid
         if not user:
-            return jsonify({"message": "User not found"}), 404
+            return jsonify({"message": "Username tidak ditemukan!"}), 404
         
         # pass valid
         if not bcrypt.check_password_hash(user["password"], password):
-            return jsonify({"message": "invalid password"}), 401
+            return jsonify({"message": "Password salah"}), 401
         
-        # Buat token JWT
+        # Generate JWT token
         access_token = create_access_token(identity=str(user["_id"]))
         return jsonify({"message": "Login successful", "access_token": access_token})
