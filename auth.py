@@ -15,11 +15,11 @@ class RegisterAPI(Resource):
 
         # Check input
         if not username or not email or not password:
-            return jsonify({"message": "Mohon isi semua data"}), 400
+            return {"message": "Mohon isi semua data"}, 400
 
         # Validasi jika username/email sudah terdaftar
         if mongo.db.users.find_one({"username": username}):
-            return jsonify({"message": "Username sudah digunakan, mohon gunakan username lain!"}), 400
+            return {"message": "Username sudah digunakan, mohon gunakan username lain!"}, 400
 
         # Hash password sebelum disimpan
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -31,7 +31,7 @@ class RegisterAPI(Resource):
             "password": hashed_password,
         }).inserted_id
 
-        return jsonify({"message": "Register berhasil", "id": str(user_id)})
+        return {"message": "Register berhasil", "id": str(user_id)}, 200
 
 class LoginAPI(Resource):
     def post(self):
@@ -46,14 +46,10 @@ class LoginAPI(Resource):
 
         # get user data
         user = mongo.db.users.find_one({"username": username})
-        # user valid
-        if not user:
-            return jsonify({"message": "Username tidak ditemukan!"}), 404
-        
-        # pass valid
-        if not bcrypt.check_password_hash(user["password"], password):
-            return jsonify({"message": "Password salah"}), 401
+        # user dan password valid
+        if not user or not bcrypt.check_password_hash(user["password"], password):
+            return {"message": "Username atau password salah!"}, 401
         
         # Generate JWT token
         access_token = create_access_token(identity=str(user["_id"]))
-        return jsonify({"message": "Login successful", "access_token": access_token})
+        return {"message": "Login successful", "access_token": access_token}, 200
