@@ -4,6 +4,9 @@ from config import Config
 from flask_pymongo import PyMongo
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from routes import initialize_routes
+from datetime import datetime
+from mqtt_service import start_mqtt
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -12,20 +15,38 @@ CORS(app)
 # initialize Flask-RESTful API
 api = Api(app)
 
-# initialize database
+# initializes mongodb
 mongo = PyMongo(app)
+app.config["MONGO_URI"] = Config.MONGO_URI
+app.config["MONGO_CLIENT"] = mongo
 
 # initialize jwt
-app.config['SECRET_KEY'] = Config.SECRET_KEY
+app.config['JWT_SECRET_KEY'] = Config.SECRET_KEY
 jwt = JWTManager(app)
 
-# @app.route('/')
-# def home():
-#     return f"Secret Key: {app.config['SECRET_KEY']}"
+# get timestamp
+app.config["timestamp_func"] = lambda: datetime.utcnow()
 
-from routes import initialize_routes
+# initialize routes
 initialize_routes(api)
+
+# initializes mqtt
+app.config["MQTT_BROKER"] = Config.MQTT_BROKER
+app.config["MQTT_PORT"] = Config.MQTT_PORT
+app.config["MQTT_TOPIC1"] = Config.MQTT_TOPIC1
+app.config["MQTT_TOPIC2"] = Config.MQTT_TOPIC2
+
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # connect to mongodb
+    try:
+        mongo.cx.server_info()  # Memeriksa koneksi ke MongoDB
+        print("Connected to MongoDB!")
+    except Exception as e:
+        print(f"MongoDB connection error: {e}")
+        raise
+    
+    start_mqtt(app) 
+    
+    app.run(debug=False)
