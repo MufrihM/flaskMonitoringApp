@@ -31,7 +31,7 @@ class RegisterAPI(Resource):
             "password": hashed_password,
         }).inserted_id
 
-        return {"message": "Register berhasil", "id": str(user_id)}, 200
+        return {"message": "Register berhasil"}, 200
 
 class LoginAPI(Resource):
     def post(self):
