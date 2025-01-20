@@ -22,6 +22,9 @@ def on_message(client, userdata, msg):
         payload = msg.payload.decode() # menerjemahkan pesan yang diterima
         print(f"Received message: {payload} on topic {msg.topic}")
         
+        # Parsing payload
+        payload_dict = eval(payload)
+
         # Koneksi ke mongodb untuk penyimpanan data
         db = app.config["MONGO_CLIENT"].db
 
@@ -29,18 +32,25 @@ def on_message(client, userdata, msg):
         topic1 = app.config["MQTT_TOPIC1"]
         topic2 = app.config["MQTT_TOPIC2"]
 
+        # get the timestamp data
+        timestamp = app.config.get("timestamp_func")()
+
         if msg.topic == topic1:
+            temp_value = payload_dict["temp"]
+            print(temp_value)
             db.temp.insert_one({
-            "topic": msg.topic,
-            "message": payload,
-            "timestamp": app.config.get("timestamp_func")()
+            "message": temp_value,
+            "timestamp": timestamp
             })
         elif msg.topic == topic2:
+            humid_value = payload_dict["humid"]
+            print(humid_value)
             db.humid.insert_one({
-            "topic": msg.topic,
-            "message": payload,
-            "timestamp": app.config.get("timestamp_func")()
+            "message": humid_value,
+            "timestamp": timestamp
             })
+        
+        # print(app.config.get("timestamp_func")())
         
 
 # Initialize MQTT Client

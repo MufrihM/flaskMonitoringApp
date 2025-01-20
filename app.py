@@ -7,6 +7,7 @@ from flask_jwt_extended import JWTManager
 from routes import initialize_routes
 from datetime import datetime
 from mqtt_service import start_mqtt
+import pytz
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -25,7 +26,12 @@ app.config['JWT_SECRET_KEY'] = Config.SECRET_KEY
 jwt = JWTManager(app)
 
 # get timestamp
-app.config["timestamp_func"] = lambda: datetime.utcnow()
+def get_current_timestamp():
+    utc_now = datetime.utcnow()
+    utc_plus_7 = utc_now.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Asia/Jakarta"))
+    return utc_plus_7
+
+app.config["timestamp_func"] = get_current_timestamp
 
 # initialize routes
 initialize_routes(api)
